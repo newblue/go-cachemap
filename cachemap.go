@@ -2,7 +2,7 @@ package cachemap
 
 import "sync"
 
-type Retriever func(string) interface{}
+type Retriever func(string) (interface{}, bool)
 
 type Cache struct {
 	lock *sync.RWMutex
@@ -16,13 +16,13 @@ func New() (c *Cache) {
 	return
 }
 
-func (c *Cache) Get(key string, f Retriever) interface{} {
-	if v, ok := c.get(key); ok {
-		return v
+func (c *Cache) Get(key string, f Retriever) (v interface{}, ok bool) {
+	if v, ok = c.get(key); ok {
+		return
 	}
-	v := f(key)
+	v, ok = f(key)
 	go c.set(key, v)
-	return v
+	return
 }
 
 func (c *Cache) Stale(key string) {
