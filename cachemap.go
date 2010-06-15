@@ -17,11 +17,11 @@ func New() (c *Cache) {
 }
 
 func (c *Cache) Get(key string, f Retriever) (v interface{}, ok bool) {
-	if v, ok = c.get(key); ok {
-		return
+	if v, ok = c.get(key); !ok {
+		if v, ok = f(key); ok {
+			go c.set(key, v)
+		}
 	}
-	v, ok = f(key)
-	go c.set(key, v)
 	return
 }
 
